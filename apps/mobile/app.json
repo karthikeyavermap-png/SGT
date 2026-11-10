@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "PulseDesk Mobile",
+    "slug": "pulsedesk-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "scheme": "pulsedesk",
+    "splash": {
+      "backgroundColor": "#0f172a"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0f172a"
+      }
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "plugins": ["expo-router", "expo-secure-store"]
+  }
+}

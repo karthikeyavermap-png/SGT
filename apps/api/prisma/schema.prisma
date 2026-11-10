@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  passwordHash  String
+  name          String
+  role          String         @default("CUSTOMER") // CUSTOMER, AGENT, ADMIN
+  avatarUrl     String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  tickets       Ticket[]       @relation("CustomerTickets")
+  assigned      Ticket[]       @relation("AssignedTickets")
+  comments      Comment[]
+  refreshTokens RefreshToken[]
+}
+
+model Ticket {
+  id              String    @id @default(uuid())
+  title           String
+  description     String
+  status          String    @default("OPEN") // OPEN, IN_PROGRESS, RESOLVED, CLOSED
+  priority        String    @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  category        String    @default("General")
+  customerId      String
+  customer        User      @relation("CustomerTickets", fields: [customerId], references: [id], onDelete: Cascade)
+  assignedAgentId String?
+  assignedAgent   User?     @relation("AssignedTickets", fields: [assignedAgentId], references: [id], onDelete: SetNull)
+  comments        Comment[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Comment {
+  id         String   @id @default(uuid())
+  content    String
+  isInternal Boolean  @default(false)
+  ticketId   String
+  ticket     Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  authorId   String
+  author     User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+}

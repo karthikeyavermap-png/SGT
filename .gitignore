@@ -1,0 +1,16 @@
+node_modules
+.pnpm-store
+dist
+.next
+out
+.expo
+.expo-shared
+web-build
+*.log
+.env
+.env.local
+.env.*.local
+*.tsbuildinfo
+.turbo
+prisma/*.db
+prisma/*.db-journal

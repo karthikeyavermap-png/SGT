@@ -1,0 +1,30 @@
+{
+  "name": "cross-platform-ticketing",
+  "private": true,
+  "scripts": {
+    "dev": "turbo run dev",
+    "dev:api": "pnpm --filter @repo/api dev",
+    "dev:web": "pnpm --filter @repo/web dev",
+    "dev:mobile": "pnpm --filter @repo/mobile start",
+    "build": "pnpm --filter @repo/shared build && pnpm --filter @repo/api build && pnpm --filter @repo/web build",
+    "typecheck": "pnpm -r typecheck",
+    "db:generate": "pnpm --filter @repo/api db:generate",
+    "db:push": "pnpm --filter @repo/api db:push",
+    "db:seed": "pnpm --filter @repo/api db:seed"
+  },
+  "devDependencies": {
+    "turbo": "^2.4.2",
+    "typescript": "^5.7.2",
+    "prettier": "^3.5.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "esbuild",
+      "prisma",
+      "bcryptjs"
+    ]
+  },
+  "packageManager": "pnpm@10.5.2"
+}
