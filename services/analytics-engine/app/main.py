@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.kafka_consumer import kafka_consumer
-from app.routers import yard_analytics, transport_kpis, commercial_kpis
+from app.routers import yard_analytics, transport_kpis, commercial_kpis, reports
 
 logging.basicConfig(
     level=logging.INFO,
@@ -37,6 +37,7 @@ app.add_middleware(
 app.include_router(yard_analytics.router)
 app.include_router(transport_kpis.router)
 app.include_router(commercial_kpis.router)
+app.include_router(reports.router)
 
 @app.get("/health", tags=["System"])
 async def health_check():
