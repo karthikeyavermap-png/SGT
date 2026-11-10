@@ -154,3 +154,4 @@ export const ticketsApi = {
     return apiFetch<Array<{ id: string; name: string; email: string; role: string; avatarUrl?: string }>>('/agents');
   },
 };
+

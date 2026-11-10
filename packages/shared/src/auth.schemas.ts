@@ -38,3 +38,4 @@ export type RegisterInput = z.infer<typeof registerSchema>;
 export type RefreshTokenInput = z.infer<typeof refreshTokenSchema>;
 export type UserProfile = z.infer<typeof userProfileSchema>;
 export type AuthResponse = z.infer<typeof authResponseSchema>;
+

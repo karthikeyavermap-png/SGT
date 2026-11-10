@@ -30,3 +30,4 @@ export const TICKET_CATEGORIES = [
 export const AUTH_COOKIE_NAME = 'refresh_token';
 export const ACCESS_TOKEN_EXPIRY = '15m';
 export const REFRESH_TOKEN_EXPIRY_DAYS = 7;
+
