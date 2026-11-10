@@ -94,6 +94,14 @@ export async function ticketRoutes(server: FastifyInstance) {
           },
           orderBy: { createdAt: 'asc' },
         },
+        activityLogs: {
+          include: {
+            actor: {
+              select: { id: true, name: true, email: true, role: true },
+            },
+          },
+          orderBy: { createdAt: 'desc' },
+        },
       },
     });
 
@@ -151,6 +159,16 @@ export async function ticketRoutes(server: FastifyInstance) {
         assignedAgent: {
           select: { id: true, name: true, email: true, avatarUrl: true },
         },
+      },
+    });
+
+    // Record Activity Log
+    await prisma.activityLog.create({
+      data: {
+        ticketId: ticket.id,
+        actorId: user.userId,
+        action: 'TICKET_CREATED',
+        details: `Ticket created with ${ticket.priority} priority in ${ticket.category}`,
       },
     });
 

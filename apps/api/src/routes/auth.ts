@@ -11,6 +11,7 @@ import {
   REFRESH_TOKEN_EXPIRY_DAYS,
 } from '@repo/shared';
 import { authenticate, getCurrentUser } from '../middleware/auth';
+import { cache } from '../services/cache';
 
 export async function authRoutes(server: FastifyInstance) {
   // POST /api/auth/register
@@ -115,6 +116,23 @@ export async function authRoutes(server: FastifyInstance) {
 
     const { email, password } = parseResult.data;
 
+    // Rate Limiting (Brute-force protection via Redis / Cache)
+    const clientIp = request.ip || '127.0.0.1';
+    const rateLimitKey = `login:${clientIp}:${email.toLowerCase()}`;
+    const rateCheck = await cache.rateLimit(rateLimitKey, 10, 60 * 15);
+
+    if (!rateCheck.allowed) {
+      reply.header('Retry-After', String(rateCheck.resetInSeconds));
+      return reply.status(429).send({
+        success: false,
+        error: {
+          message: `Too many failed login attempts. Please try again in ${Math.ceil(
+            rateCheck.resetInSeconds / 60
+          )} minutes.`,
+        },
+      });
+    }
+
     const user = await prisma.user.findUnique({
       where: { email: email.toLowerCase() },
     });
@@ -133,6 +151,9 @@ export async function authRoutes(server: FastifyInstance) {
         error: { message: 'Invalid email or password' },
       });
     }
+
+    // Reset rate limiter on successful authentication
+    await cache.del(rateLimitKey);
 
     // Sign Access Token
     const accessToken = server.jwt.sign(

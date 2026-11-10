@@ -13,6 +13,7 @@ import {
   PlusCircle,
   HelpCircle,
   Layers,
+  TrainTrack,
 } from 'lucide-react';
 import Link from 'next/link';
 import { UserRole } from '@repo/shared';
@@ -79,6 +80,18 @@ export default function DashboardLayout({
           >
             <Ticket className="h-4 w-4" />
             Ticket Queue
+          </Link>
+
+          <Link
+            href="/dashboard/sgt"
+            className={`flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition ${
+              pathname === '/dashboard/sgt'
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                : 'text-slate-400 hover:bg-slate-800/60 hover:text-white'
+            }`}
+          >
+            <TrainTrack className="h-4 w-4 text-emerald-400" />
+            SGT Operations
           </Link>
 
           {user.role !== UserRole.CUSTOMER && (
