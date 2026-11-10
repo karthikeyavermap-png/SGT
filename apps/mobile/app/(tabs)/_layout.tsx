@@ -46,6 +46,15 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="modules"
+        options={{
+          title: 'SGT Modules',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'grid' : 'grid-outline'} size={22} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',

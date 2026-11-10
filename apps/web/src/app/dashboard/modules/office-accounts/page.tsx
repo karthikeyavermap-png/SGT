@@ -13,6 +13,8 @@ import {
   ShieldCheck,
   FileSpreadsheet,
   Coins,
+  PlusCircle,
+  X,
 } from 'lucide-react';
 import {
   AccountInvoice,
@@ -23,6 +25,10 @@ import {
   getPaymentCollections,
   getAccountExpenses,
   getPurchaseSaleOrders,
+  createAccountInvoice,
+  createPaymentCollection,
+  createAccountExpense,
+  createPurchaseSaleOrder,
 } from '@/lib/modules-api';
 
 export default function OfficeAccountsModulePage() {
@@ -31,6 +37,44 @@ export default function OfficeAccountsModulePage() {
   const [collections, setCollections] = useState<PaymentCollection[]>([]);
   const [expenses, setExpenses] = useState<AccountExpense[]>([]);
   const [orders, setOrders] = useState<PurchaseSaleOrder[]>([]);
+
+  // Modals
+  const [modalType, setModalType] = useState<'invoice' | 'collection' | 'expense' | 'order' | null>(null);
+  const [formSubmitting, setFormSubmitting] = useState(false);
+
+  // Forms
+  const [invoiceForm, setInvoiceForm] = useState({
+    customerName: '',
+    customerGstin: '27AAACT2727Q1ZW',
+    invoiceType: 'GST' as const,
+    taxableAmount: 250000,
+    dueDate: '2026-12-31',
+  });
+
+  const [colForm, setColForm] = useState({
+    invoiceNumber: 'INV-GST-2026-1050',
+    customerName: 'JSW Infrastructure Ltd.',
+    amountReceived: 245600,
+    paymentMode: 'RTGS' as const,
+    transactionRef: `UTR-${Math.floor(1000000 + Math.random() * 9000000)}`,
+    tdsDeducted: 4912,
+  });
+
+  const [expForm, setExpForm] = useState({
+    category: 'DIESEL_FUEL' as const,
+    description: 'Bulk diesel replenishment',
+    amount: 75000,
+    payeeName: 'Indian Oil Depot',
+    paymentMode: 'BANK_TRANSFER' as const,
+  });
+
+  const [orderForm, setOrderForm] = useState({
+    orderType: 'SALE' as const,
+    counterpartyName: 'Tata Steel Ltd.',
+    itemOrCommodity: 'Rake Loading Services',
+    quantity: 1200,
+    unitRate: 180,
+  });
 
   useEffect(() => {
     async function loadData() {
@@ -47,6 +91,62 @@ export default function OfficeAccountsModulePage() {
     }
     loadData();
   }, []);
+
+  const handleCreateInvoice = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormSubmitting(true);
+    try {
+      const res = await createAccountInvoice(invoiceForm);
+      if (res) {
+        setInvoices([res, ...invoices]);
+        setModalType(null);
+      }
+    } finally {
+      setFormSubmitting(false);
+    }
+  };
+
+  const handleCreateCol = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormSubmitting(true);
+    try {
+      const res = await createPaymentCollection(colForm);
+      if (res) {
+        setCollections([res, ...collections]);
+        setModalType(null);
+      }
+    } finally {
+      setFormSubmitting(false);
+    }
+  };
+
+  const handleCreateExp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormSubmitting(true);
+    try {
+      const res = await createAccountExpense(expForm);
+      if (res) {
+        setExpenses([res, ...expenses]);
+        setModalType(null);
+      }
+    } finally {
+      setFormSubmitting(false);
+    }
+  };
+
+  const handleCreateOrder = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormSubmitting(true);
+    try {
+      const res = await createPurchaseSaleOrder(orderForm);
+      if (res) {
+        setOrders([res, ...orders]);
+        setModalType(null);
+      }
+    } finally {
+      setFormSubmitting(false);
+    }
+  };
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -71,6 +171,46 @@ export default function OfficeAccountsModulePage() {
           <p className="mt-1 text-xs text-slate-400 pl-8">
             Manage GST and Non-GST commercial invoices, inbound payment collections, operational expenses, and procurement purchase/sales orders.
           </p>
+        </div>
+
+        {/* Action Button depending on Tab */}
+        <div>
+          {activeTab === 'invoices' && (
+            <button
+              onClick={() => setModalType('invoice')}
+              className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-blue-500 shadow-md shadow-blue-600/20 active:scale-95"
+            >
+              <PlusCircle className="h-4 w-4" />
+              Generate Tax Invoice
+            </button>
+          )}
+          {activeTab === 'collections' && (
+            <button
+              onClick={() => setModalType('collection')}
+              className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-blue-500 shadow-md shadow-blue-600/20 active:scale-95"
+            >
+              <PlusCircle className="h-4 w-4" />
+              Record Inward RTGS
+            </button>
+          )}
+          {activeTab === 'expenses' && (
+            <button
+              onClick={() => setModalType('expense')}
+              className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-blue-500 shadow-md shadow-blue-600/20 active:scale-95"
+            >
+              <PlusCircle className="h-4 w-4" />
+              Disburse Expense
+            </button>
+          )}
+          {activeTab === 'orders' && (
+            <button
+              onClick={() => setModalType('order')}
+              className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-blue-500 shadow-md shadow-blue-600/20 active:scale-95"
+            >
+              <PlusCircle className="h-4 w-4" />
+              New Order Contract
+            </button>
+          )}
         </div>
       </div>
 
@@ -337,7 +477,301 @@ export default function OfficeAccountsModulePage() {
           </div>
         </div>
       )}
+
+      {/* Modals */}
+      {modalType && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+              <h3 className="text-sm font-bold text-white">
+                {modalType === 'invoice' && 'Generate Commercial Tax Invoice'}
+                {modalType === 'collection' && 'Record Inward RTGS / Payment'}
+                {modalType === 'expense' && 'Disburse Operational Expense'}
+                {modalType === 'order' && 'Create Purchase / Sale Order'}
+              </h3>
+              <button
+                onClick={() => setModalType(null)}
+                className="text-slate-400 hover:text-white"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {modalType === 'invoice' && (
+              <form onSubmit={handleCreateInvoice} className="space-y-4 text-xs">
+                <div>
+                  <label className="block text-slate-300 font-medium mb-1">Customer Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={invoiceForm.customerName}
+                    onChange={(e) => setInvoiceForm({ ...invoiceForm, customerName: e.target.value })}
+                    placeholder="e.g. UltraTech Cement Ltd."
+                    className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-white"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-slate-300 font-medium mb-1">Customer GSTIN</label>
+                    <input
+                      type="text"
+                      value={invoiceForm.customerGstin}
+                      onChange={(e) => setInvoiceForm({ ...invoiceForm, customerGstin: e.target.value })}
+                      className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-white font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-300 font-medium mb-1">Invoice Type</label>
+                    <select
+                      value={invoiceForm.invoiceType}
+                      onChange={(e: any) => setInvoiceForm({ ...invoiceForm, invoiceType: e.target.value })}
+                      className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-white"
+                    >
+                      <option value="GST">GST (18% Cargo Handling)</option>
+                      <option value="NON_GST">NON_GST (Exempted Trust)</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-slate-300 font-medium mb-1">Taxable Amount (INR)</label>
+                    <input
+                      type="number"
+                      required
+                      value={invoiceForm.taxableAmount}
+                      onChange={(e) => setInvoiceForm({ ...invoiceForm, taxableAmount: Number(e.target.value) })}
+                      className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-300 font-medium mb-1">Due Date</label>
+                    <input
+                      type="date"
+                      required
+                      value={invoiceForm.dueDate}
+                      onChange={(e) => setInvoiceForm({ ...invoiceForm, dueDate: e.target.value })}
+                      className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-white"
+                    />
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  disabled={formSubmitting}
+                  className="w-full rounded-xl bg-blue-600 py-2.5 font-bold text-white transition hover:bg-blue-500 disabled:opacity-50"
+                >
+                  {formSubmitting ? 'Generating...' : 'Generate & Issue Tax Invoice'}
+                </button>
+              </form>
+            )}
+
+            {modalType === 'collection' && (
+              <form onSubmit={handleCreateCol} className="space-y-4 text-xs">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-slate-300 font-medium mb-1">Invoice Number Ref</label>
+                    <input
+                      type="text"
+                      required
+                      value={colForm.invoiceNumber}
+                      onChange={(e) => setColForm({ ...colForm, invoiceNumber: e.target.value })}
+                      className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-white font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-300 font-medium mb-1">Payment Mode</label>
+                    <select
+                      value={colForm.paymentMode}
+                      onChange={(e: any) => setColForm({ ...colForm, paymentMode: e.target.value })}
+                      className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-white"
+                    >
+                      <option value="RTGS">RTGS</option>
+                      <option value="NEFT">NEFT</option>
+                      <option value="CHEQUE">CHEQUE</option>
+                      <option value="UPI">UPI</option>
+                      <option value="CASH">CASH</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-slate-300 font-medium mb-1">Customer Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={colForm.customerName}
+                    onChange={(e) => setColForm({ ...colForm, customerName: e.target.value })}
+                    className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-white"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-slate-300 font-medium mb-1">Amount Received (INR)</label>
+                    <input
+                      type="number"
+                      required
+                      value={colForm.amountReceived}
+                      onChange={(e) => setColForm({ ...colForm, amountReceived: Number(e.target.value) })}
+                      className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-300 font-medium mb-1">TDS Deducted (INR)</label>
+                    <input
+                      type="number"
+                      value={colForm.tdsDeducted}
+                      onChange={(e) => setColForm({ ...colForm, tdsDeducted: Number(e.target.value) })}
+                      className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-white"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-slate-300 font-medium mb-1">Bank UTR Transaction Ref</label>
+                  <input
+                    type="text"
+                    required
+                    value={colForm.transactionRef}
+                    onChange={(e) => setColForm({ ...colForm, transactionRef: e.target.value })}
+                    className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-white font-mono"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={formSubmitting}
+                  className="w-full rounded-xl bg-blue-600 py-2.5 font-bold text-white transition hover:bg-blue-500 disabled:opacity-50"
+                >
+                  {formSubmitting ? 'Recording...' : 'Record Payment Receipt'}
+                </button>
+              </form>
+            )}
+
+            {modalType === 'expense' && (
+              <form onSubmit={handleCreateExp} className="space-y-4 text-xs">
+                <div>
+                  <label className="block text-slate-300 font-medium mb-1">Expense Description</label>
+                  <input
+                    type="text"
+                    required
+                    value={expForm.description}
+                    onChange={(e) => setExpForm({ ...expForm, description: e.target.value })}
+                    placeholder="e.g. Substation backup diesel"
+                    className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-white"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-slate-300 font-medium mb-1">Category</label>
+                    <select
+                      value={expForm.category}
+                      onChange={(e: any) => setExpForm({ ...expForm, category: e.target.value })}
+                      className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-white"
+                    >
+                      <option value="DIESEL_FUEL">DIESEL_FUEL</option>
+                      <option value="ELECTRICITY_POWER">ELECTRICITY_POWER</option>
+                      <option value="YARD_LEASE">YARD_LEASE</option>
+                      <option value="SECURITY_SERVICES">SECURITY_SERVICES</option>
+                      <option value="MUNICIPAL_TAX">MUNICIPAL_TAX</option>
+                      <option value="OFFICE_ADMIN">OFFICE_ADMIN</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-slate-300 font-medium mb-1">Amount (INR)</label>
+                    <input
+                      type="number"
+                      required
+                      value={expForm.amount}
+                      onChange={(e) => setExpForm({ ...expForm, amount: Number(e.target.value) })}
+                      className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-white"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-slate-300 font-medium mb-1">Payee / Vendor Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={expForm.payeeName}
+                    onChange={(e) => setExpForm({ ...expForm, payeeName: e.target.value })}
+                    className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-white"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={formSubmitting}
+                  className="w-full rounded-xl bg-blue-600 py-2.5 font-bold text-white transition hover:bg-blue-500 disabled:opacity-50"
+                >
+                  {formSubmitting ? 'Disbursing...' : 'Disburse Voucher'}
+                </button>
+              </form>
+            )}
+
+            {modalType === 'order' && (
+              <form onSubmit={handleCreateOrder} className="space-y-4 text-xs">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-slate-300 font-medium mb-1">Order Type</label>
+                    <select
+                      value={orderForm.orderType}
+                      onChange={(e: any) => setOrderForm({ ...orderForm, orderType: e.target.value })}
+                      className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-white"
+                    >
+                      <option value="SALE">SALE (Client Service)</option>
+                      <option value="PURCHASE">PURCHASE (Consumable/Fuel)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-slate-300 font-medium mb-1">Counterparty</label>
+                    <input
+                      type="text"
+                      required
+                      value={orderForm.counterpartyName}
+                      onChange={(e) => setOrderForm({ ...orderForm, counterpartyName: e.target.value })}
+                      className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-white"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-slate-300 font-medium mb-1">Commodity / Material Item</label>
+                  <input
+                    type="text"
+                    required
+                    value={orderForm.itemOrCommodity}
+                    onChange={(e) => setOrderForm({ ...orderForm, itemOrCommodity: e.target.value })}
+                    className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-white"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-slate-300 font-medium mb-1">Quantity</label>
+                    <input
+                      type="number"
+                      required
+                      value={orderForm.quantity}
+                      onChange={(e) => setOrderForm({ ...orderForm, quantity: Number(e.target.value) })}
+                      className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-300 font-medium mb-1">Unit Rate (INR)</label>
+                    <input
+                      type="number"
+                      required
+                      value={orderForm.unitRate}
+                      onChange={(e) => setOrderForm({ ...orderForm, unitRate: Number(e.target.value) })}
+                      className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-white"
+                    />
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  disabled={formSubmitting}
+                  className="w-full rounded-xl bg-blue-600 py-2.5 font-bold text-white transition hover:bg-blue-500 disabled:opacity-50"
+                >
+                  {formSubmitting ? 'Registering...' : 'Register Contract Order'}
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-

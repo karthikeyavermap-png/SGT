@@ -14,6 +14,8 @@ import {
   Send,
   AlertCircle,
   FileCheck,
+  PlusCircle,
+  X,
 } from 'lucide-react';
 import {
   FleetVehicle,
@@ -23,6 +25,9 @@ import {
   getDrivers,
   getTrips,
   updateTripStatus,
+  createTrip,
+  createFleetVehicle,
+  createDriver,
 } from '@/lib/modules-api';
 
 export default function TransportFleetModulePage() {
@@ -31,6 +36,40 @@ export default function TransportFleetModulePage() {
   const [drivers, setDrivers] = useState<DriverRecord[]>([]);
   const [trips, setTrips] = useState<TripRecord[]>([]);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+
+  // Modal State
+  const [modalType, setModalType] = useState<'trip' | 'vehicle' | 'driver' | null>(null);
+  const [formSubmitting, setFormSubmitting] = useState(false);
+
+  // Forms
+  const [tripForm, setTripForm] = useState({
+    origin: 'Yard Bay A-01',
+    destination: '',
+    vehicleNumber: 'MH-12-QZ-4921',
+    driverName: 'Rajesh Sharma',
+    cargoDescription: 'Heavy Steel Coils',
+    weightTons: 28.0,
+    driverNotes: 'Green corridor transit',
+  });
+
+  const [vehicleForm, setVehicleForm] = useState({
+    vehicleNumber: '',
+    vehicleType: 'PRIME_MOVER_40T' as const,
+    makeModel: 'Tata Prima 4928.S',
+    capacityTons: 40.0,
+    fitnessExpiry: '2028-05-20',
+    insuranceExpiry: '2028-04-10',
+    lastOdometerKm: 120000,
+  });
+
+  const [driverForm, setDriverForm] = useState({
+    driverName: '',
+    licenseNumber: '',
+    licenseExpiry: '2030-08-15',
+    contactNumber: '+91 98230 00000',
+    experienceYears: 8.0,
+    assignedVehicleNumber: 'MH-12-QZ-4921',
+  });
 
   useEffect(() => {
     async function loadData() {
@@ -72,6 +111,48 @@ export default function TransportFleetModulePage() {
     }
   };
 
+  const handleCreateTrip = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormSubmitting(true);
+    try {
+      const res = await createTrip(tripForm);
+      if (res) {
+        setTrips([res, ...trips]);
+        setModalType(null);
+      }
+    } finally {
+      setFormSubmitting(false);
+    }
+  };
+
+  const handleCreateVehicle = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormSubmitting(true);
+    try {
+      const res = await createFleetVehicle(vehicleForm);
+      if (res) {
+        setVehicles([res, ...vehicles]);
+        setModalType(null);
+      }
+    } finally {
+      setFormSubmitting(false);
+    }
+  };
+
+  const handleCreateDriver = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormSubmitting(true);
+    try {
+      const res = await createDriver(driverForm);
+      if (res) {
+        setDrivers([res, ...drivers]);
+        setModalType(null);
+      }
+    } finally {
+      setFormSubmitting(false);
+    }
+  };
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Header */}
@@ -95,6 +176,37 @@ export default function TransportFleetModulePage() {
           <p className="mt-1 text-xs text-slate-400 pl-8">
             Manage heavy vehicles, driver manifests, trip dispatches, and real-time transit updates.
           </p>
+        </div>
+
+        {/* Action Button depending on Tab */}
+        <div>
+          {activeTab === 'trips' && (
+            <button
+              onClick={() => setModalType('trip')}
+              className="flex items-center gap-2 rounded-xl bg-amber-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-amber-500 shadow-md shadow-amber-600/20 active:scale-95"
+            >
+              <PlusCircle className="h-4 w-4" />
+              Dispatch New Trip
+            </button>
+          )}
+          {activeTab === 'vehicles' && (
+            <button
+              onClick={() => setModalType('vehicle')}
+              className="flex items-center gap-2 rounded-xl bg-amber-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-amber-500 shadow-md shadow-amber-600/20 active:scale-95"
+            >
+              <PlusCircle className="h-4 w-4" />
+              Add Fleet Vehicle
+            </button>
+          )}
+          {activeTab === 'drivers' && (
+            <button
+              onClick={() => setModalType('driver')}
+              className="flex items-center gap-2 rounded-xl bg-amber-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-amber-500 shadow-md shadow-amber-600/20 active:scale-95"
+            >
+              <PlusCircle className="h-4 w-4" />
+              Onboard Driver
+            </button>
+          )}
         </div>
       </div>
 
@@ -320,7 +432,201 @@ export default function TransportFleetModulePage() {
           </div>
         </div>
       )}
+
+      {/* Modals */}
+      {modalType && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+              <h3 className="text-sm font-bold text-white">
+                {modalType === 'trip' && 'Dispatch New Cargo Trip'}
+                {modalType === 'vehicle' && 'Register Fleet Vehicle'}
+                {modalType === 'driver' && 'Onboard Commercial Driver'}
+              </h3>
+              <button
+                onClick={() => setModalType(null)}
+                className="text-slate-400 hover:text-white"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {modalType === 'trip' && (
+              <form onSubmit={handleCreateTrip} className="space-y-4 text-xs">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-slate-300 font-medium mb-1">Origin Point</label>
+                    <input
+                      type="text"
+                      required
+                      value={tripForm.origin}
+                      onChange={(e) => setTripForm({ ...tripForm, origin: e.target.value })}
+                      className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-300 font-medium mb-1">Destination</label>
+                    <input
+                      type="text"
+                      required
+                      value={tripForm.destination}
+                      onChange={(e) => setTripForm({ ...tripForm, destination: e.target.value })}
+                      placeholder="e.g. JNPT Terminal Gate 3"
+                      className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-white placeholder-slate-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-slate-300 font-medium mb-1">Assigned Vehicle</label>
+                    <input
+                      type="text"
+                      required
+                      value={tripForm.vehicleNumber}
+                      onChange={(e) => setTripForm({ ...tripForm, vehicleNumber: e.target.value })}
+                      className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-300 font-medium mb-1">Driver Name</label>
+                    <input
+                      type="text"
+                      required
+                      value={tripForm.driverName}
+                      onChange={(e) => setTripForm({ ...tripForm, driverName: e.target.value })}
+                      className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-white"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-slate-300 font-medium mb-1">Cargo Description</label>
+                    <input
+                      type="text"
+                      required
+                      value={tripForm.cargoDescription}
+                      onChange={(e) => setTripForm({ ...tripForm, cargoDescription: e.target.value })}
+                      className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-300 font-medium mb-1">Payload (MT)</label>
+                    <input
+                      type="number"
+                      required
+                      value={tripForm.weightTons}
+                      onChange={(e) => setTripForm({ ...tripForm, weightTons: Number(e.target.value) })}
+                      className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-white"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={formSubmitting}
+                  className="w-full rounded-xl bg-amber-600 py-2.5 font-bold text-white transition hover:bg-amber-500 disabled:opacity-50"
+                >
+                  {formSubmitting ? 'Dispatching...' : 'Dispatch Vehicle on Route'}
+                </button>
+              </form>
+            )}
+
+            {modalType === 'vehicle' && (
+              <form onSubmit={handleCreateVehicle} className="space-y-4 text-xs">
+                <div>
+                  <label className="block text-slate-300 font-medium mb-1">Vehicle Registration #</label>
+                  <input
+                    type="text"
+                    required
+                    value={vehicleForm.vehicleNumber}
+                    onChange={(e) => setVehicleForm({ ...vehicleForm, vehicleNumber: e.target.value })}
+                    placeholder="e.g. MH-12-AB-1234"
+                    className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-white"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-slate-300 font-medium mb-1">Vehicle Type</label>
+                    <select
+                      value={vehicleForm.vehicleType}
+                      onChange={(e: any) => setVehicleForm({ ...vehicleForm, vehicleType: e.target.value })}
+                      className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-white"
+                    >
+                      <option value="PRIME_MOVER_40T">PRIME_MOVER_40T</option>
+                      <option value="TRAILER_MULTI_AXLE">TRAILER_MULTI_AXLE</option>
+                      <option value="TERMINAL_TUG_ITV">TERMINAL_TUG_ITV</option>
+                      <option value="RIGID_TRUCK">RIGID_TRUCK</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-slate-300 font-medium mb-1">Payload Tons</label>
+                    <input
+                      type="number"
+                      required
+                      value={vehicleForm.capacityTons}
+                      onChange={(e) => setVehicleForm({ ...vehicleForm, capacityTons: Number(e.target.value) })}
+                      className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-white"
+                    />
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  disabled={formSubmitting}
+                  className="w-full rounded-xl bg-amber-600 py-2.5 font-bold text-white transition hover:bg-amber-500 disabled:opacity-50"
+                >
+                  {formSubmitting ? 'Registering...' : 'Register Vehicle'}
+                </button>
+              </form>
+            )}
+
+            {modalType === 'driver' && (
+              <form onSubmit={handleCreateDriver} className="space-y-4 text-xs">
+                <div>
+                  <label className="block text-slate-300 font-medium mb-1">Driver Full Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={driverForm.driverName}
+                    onChange={(e) => setDriverForm({ ...driverForm, driverName: e.target.value })}
+                    className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-white"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-slate-300 font-medium mb-1">Commercial License #</label>
+                    <input
+                      type="text"
+                      required
+                      value={driverForm.licenseNumber}
+                      onChange={(e) => setDriverForm({ ...driverForm, licenseNumber: e.target.value })}
+                      className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-300 font-medium mb-1">Experience (Years)</label>
+                    <input
+                      type="number"
+                      required
+                      value={driverForm.experienceYears}
+                      onChange={(e) => setDriverForm({ ...driverForm, experienceYears: Number(e.target.value) })}
+                      className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-white"
+                    />
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  disabled={formSubmitting}
+                  className="w-full rounded-xl bg-amber-600 py-2.5 font-bold text-white transition hover:bg-amber-500 disabled:opacity-50"
+                >
+                  {formSubmitting ? 'Onboarding...' : 'Onboard Driver'}
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-
