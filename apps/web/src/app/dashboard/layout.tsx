@@ -14,9 +14,13 @@ import {
   HelpCircle,
   Layers,
   TrainTrack,
+  Compass,
+  Wrench,
+  Truck,
+  Receipt,
 } from 'lucide-react';
 import Link from 'next/link';
-import { UserRole } from '@repo/shared';
+import { UserRole, SystemModule, hasModuleAccess } from '@repo/shared';
 
 export default function DashboardLayout({
   children,
@@ -44,11 +48,19 @@ export default function DashboardLayout({
     );
   }
 
-  const roleBadgeColor = {
+  const roleBadgeColor: Record<string, string> = {
+    [UserRole.SUPER_ADMIN]: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
+    [UserRole.REGIONAL_DIRECTOR]: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
+    [UserRole.YARD_MANAGER]: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+    [UserRole.FLEET_DISPATCHER]: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+    [UserRole.ACCOUNTS_EXECUTIVE]: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
+    [UserRole.AUDITOR]: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
+    [UserRole.DRIVER]: 'bg-orange-500/20 text-orange-300 border-orange-500/30',
     [UserRole.ADMIN]: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
     [UserRole.AGENT]: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
     [UserRole.CUSTOMER]: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-  }[user.role as UserRole] || 'bg-slate-700 text-slate-300';
+  };
+  const currentBadgeColor = roleBadgeColor[user.role] || 'bg-slate-700 text-slate-300 border-slate-600';
 
   return (
     <div className="flex h-screen bg-slate-950 text-slate-100">
@@ -94,6 +106,64 @@ export default function DashboardLayout({
             SGT Operations
           </Link>
 
+          <div className="pt-3 mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+            Core Modules
+          </div>
+
+          <Link
+            href="/dashboard/modules"
+            className={`flex items-center gap-3 rounded-xl px-3.5 py-2 text-xs font-medium transition ${
+              pathname === '/dashboard/modules'
+                ? 'bg-indigo-600/80 text-white'
+                : 'text-slate-400 hover:bg-slate-800/60 hover:text-white'
+            }`}
+          >
+            <Compass className="h-4 w-4 text-indigo-400" />
+            RBAC Modules Hub
+          </Link>
+
+          {hasModuleAccess(user.role, SystemModule.YARD_MAINTENANCE) && (
+            <Link
+              href="/dashboard/modules/yard-maintenance"
+              className={`flex items-center gap-3 rounded-xl px-3.5 py-2 text-xs font-medium transition ${
+                pathname.startsWith('/dashboard/modules/yard-maintenance')
+                  ? 'bg-emerald-600/80 text-white'
+                  : 'text-slate-400 hover:bg-slate-800/60 hover:text-white'
+              }`}
+            >
+              <Wrench className="h-4 w-4 text-emerald-400" />
+              Yard Maintenance
+            </Link>
+          )}
+
+          {hasModuleAccess(user.role, SystemModule.TRANSPORT_FLEET) && (
+            <Link
+              href="/dashboard/modules/transport-fleet"
+              className={`flex items-center gap-3 rounded-xl px-3.5 py-2 text-xs font-medium transition ${
+                pathname.startsWith('/dashboard/modules/transport-fleet')
+                  ? 'bg-amber-600/80 text-white'
+                  : 'text-slate-400 hover:bg-slate-800/60 hover:text-white'
+              }`}
+            >
+              <Truck className="h-4 w-4 text-amber-400" />
+              Transport &amp; Fleet
+            </Link>
+          )}
+
+          {hasModuleAccess(user.role, SystemModule.OFFICE_ACCOUNTS) && (
+            <Link
+              href="/dashboard/modules/office-accounts"
+              className={`flex items-center gap-3 rounded-xl px-3.5 py-2 text-xs font-medium transition ${
+                pathname.startsWith('/dashboard/modules/office-accounts')
+                  ? 'bg-blue-600/80 text-white'
+                  : 'text-slate-400 hover:bg-slate-800/60 hover:text-white'
+              }`}
+            >
+              <Receipt className="h-4 w-4 text-blue-400" />
+              Office &amp; Accounts
+            </Link>
+          )}
+
           {user.role !== UserRole.CUSTOMER && (
             <Link
               href="/dashboard?assignedToMe=true"
@@ -127,7 +197,7 @@ export default function DashboardLayout({
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium text-white">{user.name}</p>
               <div className="flex items-center gap-1.5 mt-0.5">
-                <span className={`inline-flex items-center rounded-md border px-1.5 py-0.5 text-[10px] font-semibold tracking-wide ${roleBadgeColor}`}>
+                <span className={`inline-flex items-center rounded-md border px-1.5 py-0.5 text-[10px] font-semibold tracking-wide ${currentBadgeColor}`}>
                   {user.role}
                 </span>
               </div>
@@ -155,7 +225,7 @@ export default function DashboardLayout({
 
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium ${roleBadgeColor}`}>
+              <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium ${currentBadgeColor}`}>
                 {user.role} VIEW
               </span>
             </div>

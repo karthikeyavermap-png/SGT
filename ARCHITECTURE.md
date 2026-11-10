@@ -154,3 +154,72 @@ docker compose up --build
 - **Commercial Microservice:** `http://localhost:8083`
 - **Analytics & Report Engine Swagger:** `http://localhost:8000/docs`
 - **Ticketing Management API:** `http://localhost:4000`
+
+
+
+---
+
+## 6. Organizational Hierarchy & Core Operational Modules (RBAC)
+
+### A. Role Hierarchy Diagram
+```mermaid
+graph TD
+    %% Global & System Level
+    SA[Super Admin<br/><i>Global System Control</i>] --> RD[Regional Director<br/><i>Multi-Yard & Regional Oversight</i>]
+
+    %% Branch & Operational Management
+    RD --> YM[Yard Manager<br/><i>Yard Operations & Maintenance</i>]
+    RD --> FD[Fleet Dispatcher<br/><i>Transport & Driver Logistics</i>]
+    RD --> AE[Accounts Executive<br/><i>Office Finance & Billing</i>]
+    RD --> AU[Auditor<br/><i>Compliance & Audit Review</i>]
+
+    %% Field Level
+    FD --> DR[Driver<br/><i>Trip Execution & Updates</i>]
+
+    %% Module Access Mapping
+    subgraph Core System Modules [Operational Modules]
+        YM_Mod["Yard Maintenance Module<br/>(Allowances, Diagnostics, Oil Fills, Accounts)"]
+        FD_Mod["Transport & Fleet Module<br/>(Vehicles, Drivers, Trip Details)"]
+        AE_Mod["Office & Accounts Module<br/>(Invoices GST/Non-GST, Collections, Expenses, Purchases/Sales)"]
+    end
+
+    %% Mappings
+    YM --> YM_Mod
+    FD --> FD_Mod
+    DR --> FD_Mod
+    AE --> AE_Mod
+    SA --> Core System Modules
+    RD --> Core System Modules
+    AU --> Core System Modules
+```
+
+### B. Module Breakdown & Scope
+
+#### 1. Yard Maintenance Module (`YM_Mod`)
+- **Allowances:** Overtime, hazard pay, night shifts, and daily per diem disbursements.
+- **Diagnostics:** Fault telemetry (DTC fault codes, sensor metrics like pressure & temperature) across cranes and stackers.
+- **Oil Fills:** Lubrication records (Hydraulic ISO 68, Engine 15W40, Gear SAE 90), hour-meter intervals, and costs.
+- **Accounts:** Yard maintenance expenses, spare parts procurement, and statutory load certifications.
+
+#### 2. Transport & Fleet Module (`FD_Mod`)
+- **Vehicles:** Prime movers, multi-axle trailers, and internal transfer vehicles (ITVs) with fitness & insurance certificates.
+- **Drivers:** Driver roster, heavy vehicle licenses, experience, and safety ratings.
+- **Trip Details:** Trip manifests, live status updates (Planned, In-Transit, Delivered), and driver waybill sign-offs.
+
+#### 3. Office & Accounts Module (`AE_Mod`)
+- **Invoices (GST & Non-GST):** HSN 996511 cargo handling invoices, CGST/SGST 18% breakdowns, and payment statuses.
+- **Collections:** Bank RTGS, NEFT, Cheque, and UPI reconciliations with TDS deductions.
+- **Expenses:** High-tension electric utility bills, bulk diesel bunkering, and security vendor disbursements.
+- **Purchases & Sales:** Procurement contracts for fuel and spare consumables vs client services sales orders.
+
+### C. Demo Login Accounts
+
+| Role | Email | Password | Allowed Operational Modules |
+| :--- | :--- | :--- | :--- |
+| **Super Admin** | `superadmin@sgt.com` | `Password123!` | All Modules (`YM_Mod`, `FD_Mod`, `AE_Mod`) |
+| **Regional Director** | `regional@sgt.com` | `Password123!` | All Modules (`YM_Mod`, `FD_Mod`, `AE_Mod`) |
+| **Auditor** | `auditor@sgt.com` | `Password123!` | All Modules (Compliance & Audit Review) |
+| **Yard Manager** | `yardmgr@sgt.com` | `Password123!` | `YM_Mod` (Yard Maintenance) |
+| **Fleet Dispatcher** | `dispatcher@sgt.com` | `Password123!` | `FD_Mod` (Transport & Fleet) |
+| **Driver** | `driver@sgt.com` | `Password123!` | `FD_Mod` (Assigned Trips Execution) |
+| **Accounts Executive**| `accounts@sgt.com` | `Password123!` | `AE_Mod` (Office & Accounts) |

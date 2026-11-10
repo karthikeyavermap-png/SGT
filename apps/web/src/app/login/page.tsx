@@ -51,34 +51,52 @@ export default function LoginPage() {
         </div>
 
         {/* Demo Accounts Quick-Fill Pill Bar */}
-        <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-3.5">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
-            Quick Fill Demo Accounts:
+        <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-3.5 space-y-2.5">
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+            SGT Operational Module Roles:
           </p>
           <div className="grid grid-cols-3 gap-2">
             <button
               type="button"
-              onClick={() => handleQuickFill('admin@example.com')}
-              className="flex items-center justify-center gap-1.5 rounded-lg border border-purple-500/30 bg-purple-950/40 px-2 py-1.5 text-xs font-medium text-purple-300 transition hover:bg-purple-900/50"
+              onClick={() => handleQuickFill('superadmin@sgt.com')}
+              className="flex items-center justify-center gap-1 rounded-lg border border-purple-500/30 bg-purple-950/40 px-2 py-1.5 text-[11px] font-medium text-purple-300 transition hover:bg-purple-900/50"
             >
-              <ShieldCheck className="h-3.5 w-3.5" />
-              Admin
+              Super Admin
             </button>
             <button
               type="button"
-              onClick={() => handleQuickFill('agent@example.com')}
-              className="flex items-center justify-center gap-1.5 rounded-lg border border-blue-500/30 bg-blue-950/40 px-2 py-1.5 text-xs font-medium text-blue-300 transition hover:bg-blue-900/50"
+              onClick={() => handleQuickFill('yardmgr@sgt.com')}
+              className="flex items-center justify-center gap-1 rounded-lg border border-emerald-500/30 bg-emerald-950/40 px-2 py-1.5 text-[11px] font-medium text-emerald-300 transition hover:bg-emerald-900/50"
             >
-              <LifeBuoy className="h-3.5 w-3.5" />
-              Agent
+              Yard Mgr
             </button>
             <button
               type="button"
-              onClick={() => handleQuickFill('customer@example.com')}
-              className="flex items-center justify-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-950/40 px-2 py-1.5 text-xs font-medium text-emerald-300 transition hover:bg-emerald-900/50"
+              onClick={() => handleQuickFill('dispatcher@sgt.com')}
+              className="flex items-center justify-center gap-1 rounded-lg border border-amber-500/30 bg-amber-950/40 px-2 py-1.5 text-[11px] font-medium text-amber-300 transition hover:bg-amber-900/50"
             >
-              <User className="h-3.5 w-3.5" />
-              Customer
+              Dispatcher
+            </button>
+            <button
+              type="button"
+              onClick={() => handleQuickFill('accounts@sgt.com')}
+              className="flex items-center justify-center gap-1 rounded-lg border border-blue-500/30 bg-blue-950/40 px-2 py-1.5 text-[11px] font-medium text-blue-300 transition hover:bg-blue-900/50"
+            >
+              Accounts Exec
+            </button>
+            <button
+              type="button"
+              onClick={() => handleQuickFill('auditor@sgt.com')}
+              className="flex items-center justify-center gap-1 rounded-lg border border-cyan-500/30 bg-cyan-950/40 px-2 py-1.5 text-[11px] font-medium text-cyan-300 transition hover:bg-cyan-900/50"
+            >
+              Auditor
+            </button>
+            <button
+              type="button"
+              onClick={() => handleQuickFill('driver@sgt.com')}
+              className="flex items-center justify-center gap-1 rounded-lg border border-orange-500/30 bg-orange-950/40 px-2 py-1.5 text-[11px] font-medium text-orange-300 transition hover:bg-orange-900/50"
+            >
+              Driver
             </button>
           </div>
         </div>

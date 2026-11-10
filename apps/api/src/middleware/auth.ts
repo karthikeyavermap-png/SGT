@@ -1,5 +1,5 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { UserRole, JwtTokenPayload } from '@repo/shared';
+import { UserRole, SystemModule, hasModuleAccess, JwtTokenPayload } from '@repo/shared';
 
 declare module '@fastify/jwt' {
   interface FastifyJWT {
@@ -33,7 +33,7 @@ export async function authenticate(request: FastifyRequest, reply: FastifyReply)
   }
 }
 
-export function requireRole(allowedRoles: UserRole[]) {
+export function requireRole(allowedRoles: (UserRole | string)[]) {
   return async (request: FastifyRequest, reply: FastifyReply) => {
     const user = request.user as unknown as JwtTokenPayload | undefined;
     if (!user) {
@@ -43,10 +43,31 @@ export function requireRole(allowedRoles: UserRole[]) {
       });
     }
 
-    if (!allowedRoles.includes(user.role as UserRole)) {
+    if (!allowedRoles.includes(user.role)) {
       return reply.status(403).send({
         success: false,
         error: { message: 'Forbidden: insufficient role permissions' },
+      });
+    }
+  };
+}
+
+export function requireModule(module: SystemModule) {
+  return async (request: FastifyRequest, reply: FastifyReply) => {
+    const user = request.user as unknown as JwtTokenPayload | undefined;
+    if (!user) {
+      return reply.status(401).send({
+        success: false,
+        error: { message: 'Unauthorized' },
+      });
+    }
+
+    if (!hasModuleAccess(user.role, module)) {
+      return reply.status(403).send({
+        success: false,
+        error: {
+          message: `Access Denied: Role '${user.role}' is not authorized to access ${module}`,
+        },
       });
     }
   };

@@ -6,6 +6,9 @@ import dotenv from 'dotenv';
 import { authRoutes } from './routes/auth';
 import { ticketRoutes } from './routes/tickets';
 import { statsRoutes } from './routes/stats';
+import { yardMaintenanceRoutes } from './routes/modules/yard-maintenance';
+import { transportFleetRoutes } from './routes/modules/transport-fleet';
+import { officeAccountsRoutes } from './routes/modules/office-accounts';
 import { prisma } from './db';
 import { UserRole } from '@repo/shared';
 import { authenticate, requireRole } from './middleware/auth';
@@ -98,6 +101,11 @@ async function main() {
   await server.register(authRoutes, { prefix: '/api/auth' });
   await server.register(ticketRoutes, { prefix: '/api/tickets' });
   await server.register(statsRoutes, { prefix: '/api/stats' });
+
+  // Register Core SGT Operational Modules (Role & Module RBAC protected)
+  await server.register(yardMaintenanceRoutes, { prefix: '/api/modules/yard-maintenance' });
+  await server.register(transportFleetRoutes, { prefix: '/api/modules/transport-fleet' });
+  await server.register(officeAccountsRoutes, { prefix: '/api/modules/office-accounts' });
 
   // Global Error Handler
   server.setErrorHandler((error: any, request, reply) => {

@@ -71,3 +71,166 @@ model RefreshToken {
   revokedAt DateTime?
   createdAt DateTime  @default(now())
 }
+
+
+// ---------------------------------------------------------
+// 1. Yard Maintenance Module (Allowances, Diagnostics, Oil Fills, Accounts)
+// ---------------------------------------------------------
+model YardAllowance {
+  id            String   @id @default(uuid())
+  staffName     String
+  role          String   // Crane Operator, Rigging Tech, Maintenance Crew
+  allowanceType String   // OVERTIME, HAZARD_PAY, NIGHT_SHIFT, PER_DIEM, SPECIAL_DUTY
+  amount        Float
+  shiftDate     String
+  approvedBy    String?
+  status        String   @default("APPROVED") // PENDING, APPROVED, REJECTED
+  notes         String?
+  createdAt     DateTime @default(now())
+}
+
+model DiagnosticLog {
+  id              String   @id @default(uuid())
+  equipmentCode   String   // RMG-01, RS-02
+  component       String   // Hydraulic Pump, Spreader Lock, Transmission
+  faultCode       String   // DTC-P0420, HYD-ERR-91
+  severity        String   // LOW, MEDIUM, HIGH, CRITICAL
+  description     String
+  hoursLogged     Float
+  telemetryMetric String?  // Oil Pressure: 42 PSI, Temp: 88°C
+  reportedBy      String
+  status          String   @default("OPEN") // OPEN, INVESTIGATING, RESOLVED
+  createdAt       DateTime @default(now())
+}
+
+model OilFillRecord {
+  id             String   @id @default(uuid())
+  equipmentCode  String
+  oilType        String   // HYDRAULIC_ISO_68, ENGINE_15W40, GEAR_SAE_90
+  litersFilled   Float
+  readingHours   Float
+  costInr        Float
+  technicianName String
+  notes          String?
+  createdAt      DateTime @default(now())
+}
+
+model YardExpense {
+  id          String   @id @default(uuid())
+  category    String   // SPARE_PARTS, PREVENTIVE_MAINTENANCE, CONSUMABLES, CONTRACTOR_SERVICE
+  description String
+  vendorName  String
+  amount      Float
+  invoiceRef  String?
+  status      String   @default("PAID") // PENDING, PAID
+  createdAt   DateTime @default(now())
+}
+
+// ---------------------------------------------------------
+// 2. Transport & Fleet Module (Vehicles, Drivers, Trip Details)
+// ---------------------------------------------------------
+model FleetVehicle {
+  id              String   @id @default(uuid())
+  vehicleNumber   String   @unique // MH-12-QZ-4921
+  vehicleType     String   // PRIME_MOVER_40T, TRAILER_MULTI_AXLE, TERMINAL_TUG_ITV, RIGID_TRUCK
+  makeModel       String   // Tata Prima 4928.S
+  capacityTons    Float
+  status          String   @default("AVAILABLE") // AVAILABLE, IN_TRANSIT, MAINTENANCE, INSPECTION
+  fitnessExpiry   String
+  insuranceExpiry String
+  lastOdometerKm  Float    @default(0)
+  createdAt       DateTime @default(now())
+}
+
+model DriverRecord {
+  id                    String   @id @default(uuid())
+  driverName            String
+  licenseNumber         String   @unique
+  licenseExpiry         String
+  contactNumber         String
+  experienceYears       Float
+  safetyRating          Float    @default(4.8)
+  status                String   @default("AVAILABLE") // AVAILABLE, ON_TRIP, RESTING, ON_LEAVE
+  assignedVehicleNumber String?
+  createdAt             DateTime @default(now())
+}
+
+model TripRecord {
+  id               String    @id @default(uuid())
+  tripNumber       String    @unique // TRIP-2026-8801
+  origin           String
+  destination      String
+  vehicleNumber    String
+  driverName       String
+  cargoDescription String
+  weightTons       Float
+  status           String    @default("PLANNED") // PLANNED, IN_TRANSIT, DELAYED, DELIVERED, CANCELLED
+  departureTime    String
+  estimatedArrival String
+  actualArrival    String?
+  driverNotes      String?
+  lastOdometerKm   Float?
+  createdAt        DateTime  @default(now())
+}
+
+// ---------------------------------------------------------
+// 3. Office & Accounts Module (Invoices GST/Non-GST, Collections, Expenses, Purchases/Sales)
+// ---------------------------------------------------------
+model AccountInvoice {
+  id             String   @id @default(uuid())
+  invoiceNumber  String   @unique // INV-GST-2026-1049
+  customerName   String
+  customerGstin  String?
+  invoiceType    String   @default("GST") // GST, NON_GST
+  hsnCode        String   @default("996511")
+  taxableAmount  Float
+  cgstRate       Float    @default(9)
+  sgstRate       Float    @default(9)
+  igstRate       Float    @default(0)
+  totalTaxAmount Float
+  grossAmount    Float
+  dueDate        String
+  paymentStatus  String   @default("UNPAID") // UNPAID, PARTIALLY_PAID, PAID
+  createdAt      DateTime @default(now())
+}
+
+model PaymentCollection {
+  id               String   @id @default(uuid())
+  collectionNumber String   @unique // COL-2026-309
+  invoiceNumber    String
+  customerName     String
+  amountReceived   Float
+  paymentMode      String   // NEFT, RTGS, CHEQUE, UPI, CASH
+  transactionRef   String
+  tdsDeducted      Float    @default(0)
+  paymentDate      String
+  recordedBy       String
+  createdAt        DateTime @default(now())
+}
+
+model AccountExpense {
+  id            String   @id @default(uuid())
+  expenseNumber String   @unique // EXP-2026-402
+  category      String   // DIESEL_FUEL, ELECTRICITY_POWER, YARD_LEASE, SECURITY_SERVICES, MUNICIPAL_TAX, OFFICE_ADMIN
+  description   String
+  amount        Float
+  payeeName     String
+  paymentMode   String   // BANK_TRANSFER, CHEQUE, CORPORATE_CARD, CASH
+  paymentDate   String
+  approvedBy    String
+  createdAt     DateTime @default(now())
+}
+
+model PurchaseSaleOrder {
+  id               String   @id @default(uuid())
+  orderNumber      String   @unique // PO-2026-112, SO-2026-441
+  orderType        String   // PURCHASE, SALE
+  counterpartyName String
+  itemOrCommodity  String
+  quantity         Float
+  unitRate         Float
+  totalAmount      Float
+  status           String   @default("APPROVED") // PENDING, APPROVED, FULFILLED, CANCELLED
+  orderDate        String
+  createdAt        DateTime @default(now())
+}
